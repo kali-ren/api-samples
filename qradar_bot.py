@@ -25,7 +25,10 @@ siem_module = importlib.import_module('scratch')
 def action(acao):
 	acao = acao.lower()
 	
-	if acao == 'ofensas dia'
+	if acao == 'ofensas hoje':
+		return siem_module.get_offenses(0)
+
+	elif acao == 'ofensas dia':
 		return siem_module.get_offenses(1)
 
 	elif acao == 'ofensas semana':	
@@ -69,7 +72,7 @@ def handle(msg):
     if content_type == 'text':
         #bot.sendMessage(chat_id, msg['text'])
         if msg['text'].startswith('/help'):
-            keyboard = ReplyKeyboardMarkup(keyboard=[['ofensas dia','ofensas semana','ofensas mes']],resize_keyboard=True)
+            keyboard = ReplyKeyboardMarkup(keyboard=[['ofensas hoje','ofensas dia','ofensas semana','ofensas mes']],resize_keyboard=True)
             bot.sendMessage(chat_id, 'Choice options', reply_markup=keyboard)			
         else:
             print (msg['text'])
