@@ -18,22 +18,22 @@ from datetime import datetime,timedelta,date
 client_module   = importlib.import_module('RestApiClient')
 SampleUtilities = importlib.import_module('SampleUtilities')
 
-def get_date(day):#one month ago for today calculate
+def get_date(day):#a time ago for today calculate
     today = date.today().strftime("%d/%m/%Y")
     #today format 'dd/mm/yyyy'
     today_mili = int( datetime.strptime(today,"%d/%m/%Y").strftime('%s') )*1000
 
-    one_month_ago = ( datetime.strptime(today,"%d/%m/%Y") - timedelta(days=day) ).strftime('%d/%m/%Y')
-    one_month_ago_mili = int(datetime.strptime(one_month_ago,'%d/%m/%Y').strftime('%s') )*1000
+    a_time_ago = ( datetime.strptime(today,"%d/%m/%Y") - timedelta(days=day) ).strftime('%d/%m/%Y')
+    a_time_ago_mili = int(datetime.strptime(a_time_ago,'%d/%m/%Y').strftime('%s') )*1000
     
-    return str(one_month_ago_mili)
+    return str(a_time_ago_mili)
 
 
 def get_offenses(day):
 
     # First we have to create our client
     client = client_module.RestApiClient(version='9.0')#upgrade.
-    a = '1'
+    a = '1'#client id
     time_search = get_date(day)
     # Call the endpoint so that we can find how many OPEN offenses there are.
     response = client.call_api('siem/offenses?filter=status=OPEN', 'GET')
@@ -47,7 +47,7 @@ def get_offenses(day):
     # and choose how many offenses you want to display at a time.
     offenses_per_page = 500
 
-    # Looping here in order to repeatedly show 5 offenses at a time until we've
+    # Looping here in order to repeatedly show 500 offenses at a time until we've
     # seen all of the OPEN offenses or exit character q is pressed
     input_string = ""
     fields = '''id,description,assigned_to,categories,category_count,policy_category_count,security_category_count,close_time,closing_user,closing_reason_id,credibility,relevance,severity,magnitude,destination_networks,source_network,device_count,\
@@ -67,7 +67,7 @@ event_count,flow_count,inactive,last_updated_time,local_destination_count,offens
         SampleUtilities.pretty_print_response(response)
         sys.exit(1)
 
-        # Output the data. mexa aqui,REN
+        # Output the data.
     response_teste = response
     qtd_offenses = str(len(json.loads(response_teste.read().decode('utf-8'))))
 
@@ -79,7 +79,6 @@ event_count,flow_count,inactive,last_updated_time,local_destination_count,offens
 
 def evento_interesse():
     api_client = APIClient()
-
     # This is the AQL expression to send for the search. 
     query_expression = """SELECT domainid,LOGSOURCENAME(logsourceid) as "Log Source",\
 SUM(eventcount) as "Event Count (SUM)", MIN(magnitude) as "Magnitude (MIN)",\
