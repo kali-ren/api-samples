@@ -5,7 +5,7 @@
 # After determining that the search is complete, call
 # GET /searches/{search_id}/results for search results.
 # The results are saved through the POST /searches/{search_id} endpoint.
-  
+# script modified to fetch events of interest. 
 
 import sys
 import os
@@ -29,11 +29,10 @@ def get_date(day):#a time ago for today calculate
     return str(a_time_ago_mili)
 
 
-def get_offenses(day):
+def get_offenses(day,client_id):
 
     # First we have to create our client
     client = client_module.RestApiClient(version='9.0')#upgrade.
-    a = '1'#client id
     time_search = get_date(day)
     # Call the endpoint so that we can find how many OPEN offenses there are.
     response = client.call_api('siem/offenses?filter=status=OPEN', 'GET')
@@ -59,7 +58,7 @@ event_count,flow_count,inactive,last_updated_time,local_destination_count,offens
 
     
     response = client.call_api(
-            'siem/offenses?fields=' + fields + '&filter=start_time>'+time_search+'%20and%20domain_id=1', 'GET',
+            'siem/offenses?fields=' + fields + '&filter=start_time>'+time_search+'%20and%20domain_id='+client_id, 'GET',
             headers=range_header)
         # As usual, check the response code
     if (response.code != 200):
