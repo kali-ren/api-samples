@@ -1,13 +1,37 @@
+# -*- coding: utf-8 -*-
+import matplotlib.pyplot as plt
 import sys
 import json
+
+def grafico(parsed_response):
+    parsed_size = len(parsed_response)
+    d = {}
+
+    for i in range(0,parsed_size):    
+        categories = parsed_response[i]['categories']
+        for cat in categories:
+            if cat in d:
+                d[cat] += 1
+            else:
+                d[cat] = 1
+
+    labels = list(d.keys())
+    sizes  = list(d.values())
+
+    plt.pie(sizes,labels=labels,autopct='%1.1f%%')
+    plt.axis('equal')
+    plt.savefig('/path/fig.png')#path to fig.
+    plt.clf()#overwrite graph.
 
 
 # This function prints out the response from an endpoint in a consistent way.
 def pretty_print_response(response):
     print(response.code)
     parsed_response = json.loads(response.read().decode('utf-8'))
+    print(type(parsed_response))
     print(json.dumps(parsed_response, indent=4))
-    return
+    grafico(parsed_response)
+    return len(parsed_response)
 
 
 # this function prints out information about a request that will be made

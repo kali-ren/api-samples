@@ -21,6 +21,7 @@ sys.path.append(os.path.realpath('modules'))
 
 api = 'your_token'
 siem_module = importlib.import_module('scratch')
+db_model = importlib.import_module('banco')#import database
 
 logfile = 'yourpath'
 
@@ -28,11 +29,6 @@ def save_log(contact):#save bot new interactions
 	with open(logfile,'a') as f:
 		f.write(contact+'\n\n')
 
-#example of valid clients - use a db instead
-clients_id = {
-	'idchat_telegram':'id_qradar',
-	'idchat_telegram':'id_qradar'
-}
 
 def action_offenses(acao,client_id):
 	acao = acao.lower()
@@ -48,7 +44,7 @@ def action_offenses(acao,client_id):
 
 	elif acao == 'ofensas mes':
 		return siem_module.get_offenses(30,client_id)
-
+	
 	else:
 		return 'command not found!'
 
@@ -61,7 +57,7 @@ def speech2text(novo):
         print (type(audio))
         r = r.recognize_google(audio,language='pt')
 
-    return action(r)
+    return action_offenses(r)
 
 def extract_audio(msg):
     file_id = msg['voice']['file_id']
@@ -81,15 +77,22 @@ def handle(msg):
     print (content_type, chat_type, chat_id)#debug purposes
     contact = bot.getUpdates()
     
-    if(str(chat_id) in clients_id.keys()): 
-	    if content_type == 'text':
+    if(db_model.fetch(str(chat_id))):
+        client_id = str(db_model.get_domain_id(str(chat_id)))
+       
+        if content_type == 'text':
 	        if msg['text'].startswith('/help'):
 	            keyboard = ReplyKeyboardMarkup(keyboard=[['ofensas hoje','ofensas dia','ofensas semana','ofensas mes']],resize_keyboard=True)
-	            bot.sendMessage(chat_id, 'Choice options', reply_markup=keyboard)			
+	            bot.sendMessage(chat_id, 'Choice options', reply_markup=keyboard)				        
 	        else:
-	            print (msg['text'])
-	            bot.sendMessage(chat_id,action(msg['text']))
+                print(msg['text'])
+                answer = action_offenses(msg['text'],client_id)
+                bot.sendMessage(chat_id,answer)
 
+                if(answer.split(':')[1].split(' ')[1] != '0' and answer != 'command not found!'):
+                    with open('/path/teste.png','rb') as f:#fig. path to send.
+                        bot.sendPhoto(chat_id,f)	    
+	    
 	    elif content_type == 'voice':
 	        print (msg['voice']['file_id'])
 	        command = speech2text(extract_audio(msg))

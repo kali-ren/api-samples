@@ -31,7 +31,6 @@ def get_date(day):#a time ago for today calculate
 
 def get_offenses(day,client_id):
 
-    # First we have to create our client
     client = client_module.RestApiClient(version='9.0')#upgrade.
     time_search = get_date(day)
     # Call the endpoint so that we can find how many OPEN offenses there are.
@@ -67,14 +66,8 @@ event_count,flow_count,inactive,last_updated_time,local_destination_count,offens
         sys.exit(1)
 
         # Output the data.
-    response_teste = response
-    qtd_offenses = str(len(json.loads(response_teste.read().decode('utf-8'))))
-
-    #print ('[+] ' + qtd_offenses)
+    qtd_offenses = SampleUtilities.pretty_print_response(response)
     return '[+] quantidade de ofensas ultimo(s) {} dia(s): {} ofensa(s)'.format(day, qtd_offenses)
-    #return (SampleUtilities.pretty_print_response(response))
-
-
 
 def evento_interesse():
     api_client = APIClient()
