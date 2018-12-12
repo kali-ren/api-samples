@@ -18,9 +18,11 @@ from datetime import datetime,timedelta,date
 client_module   = importlib.import_module('RestApiClient')
 SampleUtilities = importlib.import_module('SampleUtilities')
 
-def get_date(day):#a time ago for today calculate
+# This function is used for set initial time for search offenses in milliseconds.
+# The parameter day is used as a time range factor. How many days from now the search start.
+# today format: 'dd/mm/yyyy'
+def get_date(day):
     today = date.today().strftime("%d/%m/%Y")
-    #today format 'dd/mm/yyyy'
     today_mili = int( datetime.strptime(today,"%d/%m/%Y").strftime('%s') )*1000
 
     a_time_ago = ( datetime.strptime(today,"%d/%m/%Y") - timedelta(days=day) ).strftime('%d/%m/%Y')
@@ -28,10 +30,12 @@ def get_date(day):#a time ago for today calculate
     
     return str(a_time_ago_mili)
 
-
+# This function return the number of offenses queried by the specified user.
 def get_offenses(day,client_id):
-
-    client = client_module.RestApiClient(version='9.0')#upgrade.
+	# First we have to create our client
+    # Update your version.
+    client = client_module.RestApiClient(version='9.0')
+   
     time_search = get_date(day)
     # Call the endpoint so that we can find how many OPEN offenses there are.
     response = client.call_api('siem/offenses?filter=status=OPEN', 'GET')
@@ -65,7 +69,7 @@ event_count,flow_count,inactive,last_updated_time,local_destination_count,offens
         SampleUtilities.pretty_print_response(response)
         sys.exit(1)
 
-        # Output the data.
+    # pretty_print_response return the number of offenses queried by the user.
     qtd_offenses = SampleUtilities.pretty_print_response(response)
     return '[+] quantidade de ofensas ultimo(s) {} dia(s): {} ofensa(s)'.format(day, qtd_offenses)
 
