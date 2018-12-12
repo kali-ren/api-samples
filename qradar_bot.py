@@ -3,7 +3,7 @@
 """
 Telegram bot to integrate Qradar API Samples
 
-Bot get number of offenses and assorted events(not implemeted yet) via text or voice command(speech_recognition and ffmpy are required) 
+Bot gets number of offenses and assorted events(not implemeted yet) via text or voice command(speech_recognition and ffmpy are required) 
 
 """
 
@@ -29,26 +29,30 @@ def save_log(contact):#save bot new interactions
 	with open(logfile,'a') as f:
 		f.write(contact+'\n\n')
 
-
+# This function receveid a command and returns a friendly message for specified client with the number
+# of offenses found(if any).
 def action_offenses(acao,client_id):
 	acao = acao.lower()
 	
-	if acao == 'ofensas hoje':
+	if acao == 'ofensas hoje' or acao == '/ofensas_hoje':
 		return siem_module.get_offenses(0,client_id)
 
-	elif acao == 'ofensas dia':
+	elif acao == 'ofensas dia' or acao == '/ofensas_ontem':
 		return siem_module.get_offenses(1,client_id)
 
-	elif acao == 'ofensas semana':	
+	elif acao == 'ofensas semana' or acao == '/ofensas_semana':	
 		return siem_module.get_offenses(7,client_id)
 
-	elif acao == 'ofensas mes':
+	elif acao == 'ofensas mes' or acao == '/ofensas_mes':
 		return siem_module.get_offenses(30,client_id)
 	
 	else:
 		return 'command not found!'
 
-def speech2text(novo):
+
+# This function convert audio message for text.
+# The message is send to action_offenses.
+def speech2text(novo, client_id):
     harvard = sr.AudioFile(novo)
     r = sr.Recognizer()
 			
@@ -57,8 +61,10 @@ def speech2text(novo):
         print (type(audio))
         r = r.recognize_google(audio,language='pt')
 
-    return action_offenses(r)
+    return action_offenses(r,client_id)
 
+
+# This function download the audio file from chat.
 def extract_audio(msg):
     file_id = msg['voice']['file_id']
     file_name = 'comando_novo.ogg'
@@ -72,14 +78,19 @@ def extract_audio(msg):
 
     return 'output.wav'
 
+
+# This function handles the messages and manages responses.
 def handle(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
     print (content_type, chat_type, chat_id)#debug purposes
+	chat_id = str(chat_id) 
     contact = bot.getUpdates()
+    pprint(contact)
     
+    #authenticated client using a database
     if(db_model.fetch(str(chat_id))):
         client_id = str(db_model.get_domain_id(str(chat_id)))
-       
+
         if content_type == 'text':
 	        if msg['text'].startswith('/help'):
 	            keyboard = ReplyKeyboardMarkup(keyboard=[['ofensas hoje','ofensas dia','ofensas semana','ofensas mes']],resize_keyboard=True)
@@ -89,14 +100,24 @@ def handle(msg):
                 answer = action_offenses(msg['text'],client_id)
                 bot.sendMessage(chat_id,answer)
 
-                if(answer.split(':')[1].split(' ')[1] != '0' and answer != 'command not found!'):
+                if answer == 'command not found.':
+                	pass
+
+                else:
                     with open('/path/teste.png','rb') as f:#fig. path to send.
                         bot.sendPhoto(chat_id,f)	    
 	    
 	    elif content_type == 'voice':
 	        print (msg['voice']['file_id'])
-	        command = speech2text(extract_audio(msg))
-	        bot.sendMessage(chat_id,command)
+	        answer = speech2text(extract_audio(msg), client_id)
+			
+			if answer == 'command not found':
+				pass
+			
+			else:
+				bot.sendMessage(chat_id,answer)
+				with open('/home/renan/Desktop/golimar/1teste.png','rb') as f:
+                	bot.sendPhoto(chat_id,f)
 	        try:
 	            os.remove('output.wav')
 	            os.remove('comando_novo.ogg')
@@ -113,4 +134,3 @@ print ('listening ...')
 
 while 1:
     time.sleep(10)
-
